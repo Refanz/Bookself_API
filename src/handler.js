@@ -1,6 +1,7 @@
 const { nanoid } = require('nanoid');
 const books = require('./books');
 
+/* Method Add */
 const addBookHandler = (request, h) => {
   const {
     name, year, author, summary, publisher, pageCount, readPage, reading,
@@ -27,8 +28,6 @@ const addBookHandler = (request, h) => {
     updatedAt,
   };
 
-  books.push(newBook);
-
   let reqBody = JSON.stringify(request.payload);
   reqBody = JSON.parse(reqBody);
 
@@ -49,6 +48,8 @@ const addBookHandler = (request, h) => {
     response.code(400);
     return response;
   }
+
+  books.push(newBook);
 
   const isSuccess = books.filter((book) => book.id === id).length > 0;
 
@@ -72,8 +73,51 @@ const addBookHandler = (request, h) => {
   return response;
 };
 
+/* Method Read */
 const getAllBooksHandler = (request, h) => {
-    
+  if (books.length === 0) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: [],
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  const response = h.response({
+    status: 'success',
+    data: {
+      books: books.map((book) => ({
+        id: book.id,
+        name: book.name,
+        publisher: book.publisher,
+      })),
+    },
+  });
+  response.code(200);
+  return response;
 };
 
-module.exports = { addBookHandler, getAllBooksHandler };
+const getDetailsBookWithIdHandler = (request, h) => {
+  const { id } = request.params;
+  const book = books.filter((x) => x.id === id)[0];
+
+  if (book !== undefined) {
+    return {
+      status: 'success',
+      data: {
+        book,
+      },
+    };
+  }
+
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku tidak ditemukan',
+  });
+  response.code(404);
+  return response;
+};
+module.exports = { addBookHandler, getAllBooksHandler, getDetailsBookWithIdHandler };
